@@ -1,6 +1,3 @@
-// Script by PinkFoxi
-// PinkFoxi.net
-
 CreateConVar("sv_flybysound_minspeed", 100, {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Minimum speed required for sound to be heard.")
 CreateConVar("sv_flybysound_maxspeed", 1000, {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Volume does not increase after this speed is exceeded.")
 
@@ -12,7 +9,7 @@ CreateConVar("sv_flybysound_minvol", 30, {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR
 CreateConVar("sv_flybysound_playersounds", 0, {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Script applies to players.")
 
 local windsound = "pink/flybysounds/fast_windloop1-louder.wav"
-	
+
 if (SERVER) then
 
 	AddCSLuaFile()
@@ -20,15 +17,12 @@ if (SERVER) then
 
 else
 
+	CreateClientConVar("cl_flybysound_updatedelay", 0.1, true, false, "How often the script updates. Smaller values are more accurate but more CPU intensive.", 0.0, 0.3)
+
 	local function averageSpeed(ent)
 		local vel = ent:GetVelocity()
 		return math.Round((math.abs(vel.y) + math.abs(vel.x) + math.abs(vel.z))/3)
 	end
-
-	/*local function guessScale(ent)
-		if (!IsValid(ent)) then return 0 end
-		return math.Round(ent:BoundingRadius()*ent:GetModelScale())
-	end*/
 
 	local function guessScale(ent)
 		if (!IsValid(ent)) then return 0 end
@@ -38,10 +32,19 @@ else
 		local scaled = vecdiff*ent:GetModelScale()
 		return math.Round((math.abs(scaled.x) + math.abs(scaled.y) + math.abs(scaled.z))/3)
 	end
-	
+
 	local validClasses = {"prop_physics", "prop_physics_multiplayer", "prop_ragdoll", "npc_rollermine", "sent_ball"}
 
+	local lastUpdate = 0
+
 	hook.Add("Think", "FlyBySound_Think", function()
+		local updateDelay = GetConVar("cl_flybysound_updatedelay"):GetFloat()
+
+		if (updateDelay > 0) then
+			if (CurTime() < lastUpdate + updateDelay) then return end
+			lastUpdate = CurTime()
+		end
+
 		local minspeed = GetConVar("sv_flybysound_minspeed"):GetInt()
 		local maxspeed = GetConVar("sv_flybysound_maxspeed"):GetInt()
 		local minshapevolume = GetConVar("sv_flybysound_minshapevolume"):GetInt()
@@ -59,7 +62,7 @@ else
 				end
 			end
 
-			if (!table.HasValue(validClasses, v:GetClass())) then 
+			if (!table.HasValue(validClasses, v:GetClass())) then
 				if (!(v:IsPlayer() && GetConVar("sv_flybysound_playersounds"):GetBool())) then
 					if (v.FlyBySound) then
 						v.FlyBySound:Stop()
@@ -122,19 +125,4 @@ else
 		end
 	end)
 
-	/*hook.Add("HUDPaint", "DebugSpeeds", function()
-		for k, v in pairs (ents.GetAll()) do
-
-			if (!table.HasValue(validClasses, v:GetClass())) then continue end
-
-			local speed = averageSpeed(v)
-			local dist = math.Round(EyePos():Distance(v:GetPos()))
-
-			local ts = v:GetPos():ToScreen()
-			draw.SimpleTextOutlined(speed .. " - " .. dist .. " - " .. guessScale(v), "TargetID", ts.x, ts.y, Color(0, 255, 0, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0, 255))
-		end
-	end)*/
-
 end
-
-// PinkFoxi.net
