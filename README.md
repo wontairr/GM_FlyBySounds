@@ -1,6 +1,8 @@
-# GM_FlyBySounds
+# FlyBySounds
 
-GM_FlyBySounds is a Garry's Mod addon that makes objects emit "whooshing" sounds when they fly past the player. The pitch varies based on the size and speed of the object.
+FlyBySounds is a Garry's Mod addon that makes objects emit "whooshing" sounds when they fly past the player. The pitch varies based on the size and speed of the object.
+
+[Workshop Link](https://steamcommunity.com/sharedfiles/filedetails/?id=167809847)
 
 ---
 
