@@ -21,7 +21,7 @@ updateCVars()
 
 local function isEntityRelevant(ent)
   if not IsValid(ent) then return false end
-  if EyePos():DistToSqr(ent:GetPos()) > cutoffDist * cutoffDist then return false end
+  if cutoffDist > 0 and EyePos():DistToSqr(ent:GetPos()) > cutoffDist * cutoffDist then return false end
 
   if ent:IsPlayer() then
     if ent:GetMoveType() == MOVETYPE_NOCLIP or not playerSounds or not ent:Alive() then return false end
