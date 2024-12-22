@@ -1,9 +1,10 @@
-local minspeed, maxspeed, minshapevolume, maxshapevolume, minvol, cutoffDist, scanDelay, updateDelay, playerSounds
+local minspeed, maxspeed, minshapevolume, maxshapevolume, minvol, cutoffDist, scanDelay, updateDelay, playerSounds, windSound
 local validClasses = {"prop_physics", "prop_physics_multiplayer", "prop_ragdoll", "npc_rollermine", "sent_ball", "player"}
 
 CreateClientConVar("cl_flybysound_scandelay", 0.5, true, false, "How often the script scans for relevant entities. Smaller values give faster feedback but are more CPU intensive.", 0.0, 1.0)
 CreateClientConVar("cl_flybysound_updatedelay", 0.05, true, false, "How often the script updates sound effects (pitch, volume). Smaller values give smoother sound transitions but more CPU intensive.", 0.0, 0.3)
 CreateClientConVar("cl_flybysound_cutoffdist", 3000, true, false, "Maximum distance at which sounds can be heard. Smaller values can give better performance in large maps.", 0, 10000)
+CreateClientConVar("cl_flybysound_alternatesound",0,true,false,"If set to 1 then an alternate wind sound will play. (Portal 2)")
 
 local function updateCVars()
   minspeed = GetConVar("sv_flybysound_minspeed"):GetInt()
@@ -15,6 +16,11 @@ local function updateCVars()
   scanDelay = GetConVar("cl_flybysound_scandelay"):GetFloat()
   updateDelay = GetConVar("cl_flybysound_updatedelay"):GetFloat()
   playerSounds = GetConVar("sv_flybysound_playersounds"):GetBool()
+  
+  windSound = "pink/flybysounds/fast_windloop1-louder.wav"
+  if GetConVar("cl_flybysound_alternatesound"):GetBool() == true then
+    windSound = "pink/flybysounds/portal2_wind.wav"
+  end
 end
 
 updateCVars()
@@ -62,6 +68,8 @@ local function scanForRelevantEntities()
   end
 end
 
+
+
 local function updateSound(entity)
   if not IsValid(entity) then return end
 
@@ -78,7 +86,7 @@ local function updateSound(entity)
   end
 
   if not entity.FlyBySound then
-    entity.FlyBySound = CreateSound(entity, "pink/flybysounds/fast_windloop1-louder.wav")
+    entity.FlyBySound = CreateSound(entity, windSound)
   end
 
   local dist = math.Round(EyePos():Distance(entity:GetPos()))
