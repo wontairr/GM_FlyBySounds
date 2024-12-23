@@ -53,8 +53,12 @@ local function guessScale(ent)
   if not IsValid(ent) then return 0 end
   if ent:IsPlayer() then return 125 end
   local min, max = ent:GetCollisionBounds()
-  local vecdiff = min - max
-  local scaled = vecdiff * ent:GetModelScale()
+
+  if not min then min = 0 end 
+  if not max then max = 0 end
+
+  local vecDiff = min - max
+  local scaled = vecDiff * ent:GetModelScale()
   return math.Round((math.abs(scaled.x) + math.abs(scaled.y) + math.abs(scaled.z)) / 3)
 end
 
@@ -86,7 +90,7 @@ local function updateSound(entity)
   if speed <= minspeed then
     if entity.FlyBySoundPlaying then
       entity.FlyBySoundPlaying = false
-      entity.FlyBySound:FadeOut(0.5)
+      if entity.FlyBySound then entity.FlyBySound:FadeOut(0.5) end
     end
     return
   end
