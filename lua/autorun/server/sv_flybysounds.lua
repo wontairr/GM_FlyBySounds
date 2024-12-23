@@ -36,12 +36,3 @@ hook.Add("Think","FlyBySound_ServerThink",function()
     end
 end)
 
-concommand.Add("flybysounds_test",function(ply)
-    if SERVER then
-        local tr = ply:GetEyeTrace()
-        if IsValid(tr.Entity) then
-            print(tr.Entity:GetClass())
-        end
-    end
-end)
-
