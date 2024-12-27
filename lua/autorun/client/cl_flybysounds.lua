@@ -19,7 +19,7 @@ local function updateCVars()
   scanDelay       = GetConVar("cl_flybysound_scandelay"):GetFloat()
   updateDelay     = GetConVar("cl_flybysound_updatedelay"):GetFloat()
   playerSounds    = GetConVar("sv_flybysound_playersounds"):GetBool()
-  spinSounds      = GetConVar("sv_flybysounds_spinsounds"):GetBool()
+  spinSounds      = GetConVar("sv_flybysound_spinsounds"):GetBool()
 
   windSound = "pink/flybysounds/fast_windloop1-louder.wav"
   if GetConVar("cl_flybysound_altsound"):GetBool() == true then
