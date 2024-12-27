@@ -22,16 +22,16 @@ local function updateCVars()
   spinSounds      = GetConVar("sv_flybysounds_spinsounds"):GetBool()
 
   windSound = "pink/flybysounds/fast_windloop1-louder.wav"
-  if GetConVar("cl_flybysound_alternatesound"):GetBool() == true then
+  if GetConVar("cl_flybysound_altsound"):GetBool() == true then
     windSound = "pink/flybysounds/portal2_wind.wav"
   end
 end
 
 updateCVars()
 
-cvars.RemoveChangeCallback("cl_flybysound_alternatesound", "flybysounds_altsound_callback")
+cvars.RemoveChangeCallback("cl_flybysound_altsound", "flybysounds_altsound_callback")
 
-cvars.AddChangeCallback("cl_flybysound_alternatesound", function(convar, oldVal, newVal)
+cvars.AddChangeCallback("cl_flybysound_altsound", function(convar, oldVal, newVal)
   updateCVars()
 
   for _, entity in ipairs(relevantEntities) do
