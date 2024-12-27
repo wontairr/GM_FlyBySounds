@@ -110,19 +110,21 @@ local function updateSound(entity)
 
   -- Calculate cheap angular velocity length
   if spinSounds then
-
-    local lastAng = entity.FlyBySoundLastAng or angle_zero
     local entAngles = entity:GetAngles()
 
+    if entity.FlyBySoundLastAng then
+      local angDiff = entAngles - entity.FlyBySoundLastAng
+
+      angDiff.x = (angDiff.x + 180) % 360 - 180
+      angDiff.y = (angDiff.y + 180) % 360 - 180
+      angDiff.z = (angDiff.z + 180) % 360 - 180
+
+      local angDiffLength = (math.abs(angDiff.x) + math.abs(angDiff.y) + math.abs(angDiff.z)) / 3
+
+      entity.FlyBySoundAngVel = angDiffLength * 10
+    end
+
     entity.FlyBySoundLastAng = entAngles
-    local angDiff = entAngles - lastAng
-
-    local angDiffLength = (math.abs(angDiff.x) + math.abs(angDiff.y) + math.abs(angDiff.z)) / 3
-    if angDiffLength < 60 then angDiffLength = 0 end
-
-    -- i have no good reason why i did this like this, but it has good results so im not gonna touch it
-    entity.FlyBySoundAngVel = angDiffLength^2 / 4
-
   end
 
   local speed = averageSpeed(entity)
