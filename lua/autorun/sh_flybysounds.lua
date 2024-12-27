@@ -8,18 +8,17 @@ CreateConVar("sv_flybysound_minvol", 30, {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR
 
 CreateConVar("sv_flybysound_playersounds", 0, {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Script applies to players.")
 
-CreateConVar("sv_flybysounds_spinsounds",0,{FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY},"If set to 1, the sound will be heard when an entity is spinning.")
+CreateConVar("sv_flybysounds_spinsounds", 0, {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, "If set to 1, the sound will be heard when an entity is spinning.")
 
--- Moved from client so the server can see it.
 FlyBySound_validClasses = {
 	"prop_physics",
 	"prop_physics_override",
 	"prop_physics_multiplayer",
 	"prop_ragdoll",
 
-    "prop_vehicle_jeep",
-    "prop_vehicle_airboat",
-    "prop_vehicle_prisoner_pod",
+	"prop_vehicle_jeep",
+	"prop_vehicle_airboat",
+	"prop_vehicle_prisoner_pod",
 
 	"npc_rollermine",
 	"sent_ball",
@@ -27,4 +26,3 @@ FlyBySound_validClasses = {
 
 	"gmod_wheel",
 }
-

@@ -5,7 +5,7 @@ local relevantEntities = {}
 CreateClientConVar("cl_flybysound_scandelay", 0.5, true, false, "How often the script scans for relevant entities. Smaller values give faster feedback but are more CPU intensive.", 0.0, 1.0)
 CreateClientConVar("cl_flybysound_updatedelay", 0.05, true, false, "How often the script updates sound effects (pitch, volume). Smaller values give smoother sound transitions but more CPU intensive.", 0.0, 0.3)
 CreateClientConVar("cl_flybysound_cutoffdist", 3000, true, false, "Maximum distance at which sounds can be heard. Smaller values can give better performance in large maps.", 0, 10000)
-CreateClientConVar("cl_flybysound_alternatesound",0,true,false,"If set to 1 then an alternate wind sound will play. (Portal 2)")
+CreateClientConVar("cl_flybysound_altsound", 0, true, false, "If set to 1 then an alternative wind sound will play. (Portal 2)")
 
 
 
@@ -20,7 +20,7 @@ local function updateCVars()
   updateDelay     = GetConVar("cl_flybysound_updatedelay"):GetFloat()
   playerSounds    = GetConVar("sv_flybysound_playersounds"):GetBool()
   spinSounds      = GetConVar("sv_flybysounds_spinsounds"):GetBool()
-  
+
   windSound = "pink/flybysounds/fast_windloop1-louder.wav"
   if GetConVar("cl_flybysound_alternatesound"):GetBool() == true then
     windSound = "pink/flybysounds/portal2_wind.wav"
@@ -29,18 +29,19 @@ end
 
 updateCVars()
 
-cvars.RemoveChangeCallback("cl_flybysound_alternatesound","flybysounds_altsound_callback")
+cvars.RemoveChangeCallback("cl_flybysound_alternatesound", "flybysounds_altsound_callback")
 
-cvars.AddChangeCallback("cl_flybysound_alternatesound",function(convar,oldVal,newVal)
-  print('Swapping old sounds...')
+cvars.AddChangeCallback("cl_flybysound_alternatesound", function(convar, oldVal, newVal)
   updateCVars()
-  for _,entity in ipairs(relevantEntities) do
+
+  for _, entity in ipairs(relevantEntities) do
     if not entity.FlyBySound then return end
     entity.FlyBySound:Stop()
     entity.FlyBySoundPlaying = false
     entity.FlyBySound = CreateSound(entity, windSound)
   end
-end,"flybysounds_altsound_callback")
+
+end, "flybysounds_altsound_callback")
 
 
 local function isEntityRelevant(ent)
@@ -59,7 +60,7 @@ local function isEntityRelevant(ent)
 end
 
 local function averageSpeed(ent)
-  local vel = ent:GetVelocity() 
+  local vel = ent:GetVelocity()
 
   local angVel = 1.0
   if spinSounds then angVel = ent.FlyBySoundAngVel or 0.0 end
@@ -74,7 +75,7 @@ local function guessScale(ent)
   if ent:IsPlayer() then return 125 end
   local min, max = ent:GetCollisionBounds()
 
-  if not min then min = 0 end 
+  if not min then min = 0 end
   if not max then max = 0 end
 
   local vecDiff = min - max
@@ -111,7 +112,7 @@ local function updateSound(entity)
 
     local lastAng = entity.FlyBySoundLastAng or angle_zero
     local entAngles = entity:GetAngles()
-    
+
     entity.FlyBySoundLastAng = entAngles
     local angDiff = entAngles - lastAng
 
