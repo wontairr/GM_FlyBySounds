@@ -8,7 +8,7 @@ CreateConVar("sv_flybysound_minvol", 30, {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR
 
 CreateConVar("sv_flybysound_playersounds", 0, {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Script applies to players.")
 
-CreateConVar("sv_flybysounds_spinsounds",0,{FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY},"If set to 1, the sound will be heard when an entity is spinning. WARNING: May impact performance")
+CreateConVar("sv_flybysounds_spinsounds",0,{FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY},"If set to 1, the sound will be heard when an entity is spinning.")
 
 -- Moved from client so the server can see it.
 FlyBySound_validClasses = {
