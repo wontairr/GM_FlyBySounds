@@ -1,9 +1,13 @@
 local minspeed, maxspeed, minshapevolume, maxshapevolume, minvol, cutoffDist, scanDelay, updateDelay, spinSounds, playerSounds, windSound
 
+local relevantEntities = {}
+
 CreateClientConVar("cl_flybysound_scandelay", 0.5, true, false, "How often the script scans for relevant entities. Smaller values give faster feedback but are more CPU intensive.", 0.0, 1.0)
 CreateClientConVar("cl_flybysound_updatedelay", 0.05, true, false, "How often the script updates sound effects (pitch, volume). Smaller values give smoother sound transitions but more CPU intensive.", 0.0, 0.3)
 CreateClientConVar("cl_flybysound_cutoffdist", 3000, true, false, "Maximum distance at which sounds can be heard. Smaller values can give better performance in large maps.", 0, 10000)
 CreateClientConVar("cl_flybysound_alternatesound",0,true,false,"If set to 1 then an alternate wind sound will play. (Portal 2)")
+
+
 
 local function updateCVars()
   minspeed        = GetConVar("sv_flybysound_minspeed"):GetInt()
@@ -25,6 +29,20 @@ end
 
 updateCVars()
 
+cvars.RemoveChangeCallback("cl_flybysound_alternatesound","flybysounds_altsound_callback")
+
+cvars.AddChangeCallback("cl_flybysound_alternatesound",function(convar,oldVal,newVal)
+  print('Swapping old sounds...')
+  updateCVars()
+  for _,entity in ipairs(relevantEntities) do
+    if not entity.FlyBySound then return end
+    entity.FlyBySound:Stop()
+    entity.FlyBySoundPlaying = false
+    entity.FlyBySound = CreateSound(entity, windSound)
+  end
+end,"flybysounds_altsound_callback")
+
+
 local function isEntityRelevant(ent)
   if not IsValid(ent) then return false end
   if cutoffDist > 0 and EyePos():DistToSqr(ent:GetPos()) > cutoffDist * cutoffDist then return false end
@@ -42,11 +60,13 @@ end
 
 local function averageSpeed(ent)
   local vel = ent:GetVelocity() 
-  if spinSounds then
-    local angVel = ent:GetNWVector("FlyBySound_AngularVelocity",vector_zero)
-    vel = vel + angVel
-  end
-  return math.Round((math.abs(vel.y) + math.abs(vel.x) + math.abs(vel.z)) / 3)
+
+  local angVel = 1.0
+  if spinSounds then angVel = ent.FlyBySoundAngVel or 0.0 end
+
+  local averageSpeed = (math.abs(vel.y) + math.abs(vel.x) + math.abs(vel.z)) / 3
+
+  return math.Round(averageSpeed + angVel)
 end
 
 local function guessScale(ent)
@@ -85,6 +105,23 @@ local function updateSound(entity)
 
   local shapevolume = guessScale(entity)
   if shapevolume < minvol then return end
+
+  -- Calculate cheap angular velocity length
+  if spinSounds then
+
+    local lastAng = entity.FlyBySoundLastAng or angle_zero
+    local entAngles = entity:GetAngles()
+    
+    entity.FlyBySoundLastAng = entAngles
+    local angDiff = entAngles - lastAng
+
+    local angDiffLength = (math.abs(angDiff.x) + math.abs(angDiff.y) + math.abs(angDiff.z)) / 3
+    if angDiffLength < 60 then angDiffLength = 0 end
+
+    -- i have no good reason why i did this like this, but it has good results so im not gonna touch it
+    entity.FlyBySoundAngVel = angDiffLength^2 / 4
+
+  end
 
   local speed = averageSpeed(entity)
   if speed <= minspeed then
