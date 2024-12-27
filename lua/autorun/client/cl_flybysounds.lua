@@ -1,23 +1,47 @@
-local minspeed, maxspeed, minshapevolume, maxshapevolume, minvol, cutoffDist, scanDelay, updateDelay, playerSounds
-local validClasses = {"prop_physics", "prop_physics_multiplayer", "prop_ragdoll", "npc_rollermine", "sent_ball", "player"}
+local minspeed, maxspeed, minshapevolume, maxshapevolume, minvol, cutoffDist, scanDelay, updateDelay, spinSounds, playerSounds, windSound
+
+local relevantEntities = {}
 
 CreateClientConVar("cl_flybysound_scandelay", 0.5, true, false, "How often the script scans for relevant entities. Smaller values give faster feedback but are more CPU intensive.", 0.0, 1.0)
 CreateClientConVar("cl_flybysound_updatedelay", 0.05, true, false, "How often the script updates sound effects (pitch, volume). Smaller values give smoother sound transitions but more CPU intensive.", 0.0, 0.3)
 CreateClientConVar("cl_flybysound_cutoffdist", 3000, true, false, "Maximum distance at which sounds can be heard. Smaller values can give better performance in large maps.", 0, 10000)
+CreateClientConVar("cl_flybysound_alternatesound",0,true,false,"If set to 1 then an alternate wind sound will play. (Portal 2)")
+
+
 
 local function updateCVars()
-  minspeed = GetConVar("sv_flybysound_minspeed"):GetInt()
-  maxspeed = GetConVar("sv_flybysound_maxspeed"):GetInt()
-  minshapevolume = GetConVar("sv_flybysound_minshapevolume"):GetInt()
-  maxshapevolume = GetConVar("sv_flybysound_maxshapevolume"):GetInt()
-  minvol = GetConVar("sv_flybysound_minvol"):GetInt()
-  cutoffDist = GetConVar("cl_flybysound_cutoffdist"):GetInt()
-  scanDelay = GetConVar("cl_flybysound_scandelay"):GetFloat()
-  updateDelay = GetConVar("cl_flybysound_updatedelay"):GetFloat()
-  playerSounds = GetConVar("sv_flybysound_playersounds"):GetBool()
+  minspeed        = GetConVar("sv_flybysound_minspeed"):GetInt()
+  maxspeed        = GetConVar("sv_flybysound_maxspeed"):GetInt()
+  minshapevolume  = GetConVar("sv_flybysound_minshapevolume"):GetInt()
+  maxshapevolume  = GetConVar("sv_flybysound_maxshapevolume"):GetInt()
+  minvol          = GetConVar("sv_flybysound_minvol"):GetInt()
+  cutoffDist      = GetConVar("cl_flybysound_cutoffdist"):GetInt()
+  scanDelay       = GetConVar("cl_flybysound_scandelay"):GetFloat()
+  updateDelay     = GetConVar("cl_flybysound_updatedelay"):GetFloat()
+  playerSounds    = GetConVar("sv_flybysound_playersounds"):GetBool()
+  spinSounds      = GetConVar("sv_flybysounds_spinsounds"):GetBool()
+  
+  windSound = "pink/flybysounds/fast_windloop1-louder.wav"
+  if GetConVar("cl_flybysound_alternatesound"):GetBool() == true then
+    windSound = "pink/flybysounds/portal2_wind.wav"
+  end
 end
 
 updateCVars()
+
+cvars.RemoveChangeCallback("cl_flybysound_alternatesound","flybysounds_altsound_callback")
+
+cvars.AddChangeCallback("cl_flybysound_alternatesound",function(convar,oldVal,newVal)
+  print('Swapping old sounds...')
+  updateCVars()
+  for _,entity in ipairs(relevantEntities) do
+    if not entity.FlyBySound then return end
+    entity.FlyBySound:Stop()
+    entity.FlyBySoundPlaying = false
+    entity.FlyBySound = CreateSound(entity, windSound)
+  end
+end,"flybysounds_altsound_callback")
+
 
 local function isEntityRelevant(ent)
   if not IsValid(ent) then return false end
@@ -29,27 +53,39 @@ local function isEntityRelevant(ent)
 
   if ent:WaterLevel() > 1 then return false end
 
+  if LocalPlayer():GetVehicle() == ent then return false end
+
   return true
 end
 
 local function averageSpeed(ent)
-  local vel = ent:GetVelocity()
-  return math.Round((math.abs(vel.y) + math.abs(vel.x) + math.abs(vel.z)) / 3)
+  local vel = ent:GetVelocity() 
+
+  local angVel = 1.0
+  if spinSounds then angVel = ent.FlyBySoundAngVel or 0.0 end
+
+  local averageSpeed = (math.abs(vel.y) + math.abs(vel.x) + math.abs(vel.z)) / 3
+
+  return math.Round(averageSpeed + angVel)
 end
 
 local function guessScale(ent)
   if not IsValid(ent) then return 0 end
   if ent:IsPlayer() then return 125 end
   local min, max = ent:GetCollisionBounds()
-  local vecdiff = min - max
-  local scaled = vecdiff * ent:GetModelScale()
+
+  if not min then min = 0 end 
+  if not max then max = 0 end
+
+  local vecDiff = min - max
+  local scaled = vecDiff * ent:GetModelScale()
   return math.Round((math.abs(scaled.x) + math.abs(scaled.y) + math.abs(scaled.z)) / 3)
 end
 
 local function scanForRelevantEntities()
   relevantEntities = {}
 
-  for _, vClass in ipairs(validClasses) do
+  for _, vClass in ipairs(FlyBySound_validClasses) do
     for _, ent in ipairs(ents.FindByClass(vClass)) do
       if ent == LocalPlayer() then continue end
       if isEntityRelevant(ent) then
@@ -62,23 +98,42 @@ local function scanForRelevantEntities()
   end
 end
 
+
+
 local function updateSound(entity)
   if not IsValid(entity) then return end
 
   local shapevolume = guessScale(entity)
   if shapevolume < minvol then return end
 
+  -- Calculate cheap angular velocity length
+  if spinSounds then
+
+    local lastAng = entity.FlyBySoundLastAng or angle_zero
+    local entAngles = entity:GetAngles()
+    
+    entity.FlyBySoundLastAng = entAngles
+    local angDiff = entAngles - lastAng
+
+    local angDiffLength = (math.abs(angDiff.x) + math.abs(angDiff.y) + math.abs(angDiff.z)) / 3
+    if angDiffLength < 60 then angDiffLength = 0 end
+
+    -- i have no good reason why i did this like this, but it has good results so im not gonna touch it
+    entity.FlyBySoundAngVel = angDiffLength^2 / 4
+
+  end
+
   local speed = averageSpeed(entity)
   if speed <= minspeed then
     if entity.FlyBySoundPlaying then
       entity.FlyBySoundPlaying = false
-      entity.FlyBySound:FadeOut(0.5)
+      if entity.FlyBySound then entity.FlyBySound:FadeOut(0.5) end
     end
     return
   end
 
   if not entity.FlyBySound then
-    entity.FlyBySound = CreateSound(entity, "pink/flybysounds/fast_windloop1-louder.wav")
+    entity.FlyBySound = CreateSound(entity, windSound)
   end
 
   local dist = math.Round(EyePos():Distance(entity:GetPos()))
