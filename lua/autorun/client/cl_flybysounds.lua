@@ -35,7 +35,8 @@ cvars.AddChangeCallback("cl_flybysound_alternatesound", function(convar, oldVal,
   updateCVars()
 
   for _, entity in ipairs(relevantEntities) do
-    if not entity.FlyBySound then return end
+    if not entity.FlyBySound then continue end
+
     entity.FlyBySound:Stop()
     entity.FlyBySoundPlaying = false
     entity.FlyBySound = CreateSound(entity, windSound)
