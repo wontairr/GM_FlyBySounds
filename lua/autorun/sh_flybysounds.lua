@@ -53,8 +53,8 @@ if CLIENT then
 			panel:NumSlider("Sound Update Delay","cl_flybysound_updatedelay",0.00,0.300,2)
 
 			panel:NumSlider("Maximum Audible Distance","cl_flybysound_cutoffdist",0,10000,1)
-			
-			panel:CheckBox("Alternative Sound Effect","cl_flybysound_alternatesound")
+
+			panel:CheckBox("Alternative Sound Effect","cl_flybysound_altsound")
 
 			panel:Help(" ")
 
