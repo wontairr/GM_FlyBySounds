@@ -7,7 +7,12 @@ CreateClientConVar("cl_flybysound_updatedelay", 0.05, true, false, "How often th
 CreateClientConVar("cl_flybysound_cutoffdist", 3000, true, false, "Maximum distance at which sounds can be heard. Smaller values can give better performance in large maps.", 0, 10000)
 CreateClientConVar("cl_flybysound_alternatesound",0,true,false,"If set to 1 then an alternate wind sound will play. (Portal 2)")
 
-
+concommand.Add("cl_flybysound_resetconvars",function()
+  RunConsoleCommand("cl_flybysound_scandelay",      0.5)
+  RunConsoleCommand("cl_flybysound_updatedelay",    0.05)
+  RunConsoleCommand("cl_flybysound_cutoffdist",     3000)
+  RunConsoleCommand("cl_flybysound_alternatesound", 0)
+end)
 
 local function updateCVars()
   minspeed        = GetConVar("sv_flybysound_minspeed"):GetInt()
@@ -19,7 +24,7 @@ local function updateCVars()
   scanDelay       = GetConVar("cl_flybysound_scandelay"):GetFloat()
   updateDelay     = GetConVar("cl_flybysound_updatedelay"):GetFloat()
   playerSounds    = GetConVar("sv_flybysound_playersounds"):GetBool()
-  spinSounds      = GetConVar("sv_flybysounds_spinsounds"):GetBool()
+  spinSounds      = GetConVar("sv_flybysound_spinsounds"):GetBool()
   
   windSound = "pink/flybysounds/fast_windloop1-louder.wav"
   if GetConVar("cl_flybysound_alternatesound"):GetBool() == true then
