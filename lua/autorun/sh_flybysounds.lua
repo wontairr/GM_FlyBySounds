@@ -11,13 +11,13 @@ CreateConVar("sv_flybysound_playersounds", 0, {FCVAR_REPLICATED, FCVAR_ARCHIVE, 
 CreateConVar("sv_flybysound_spinsounds",0,{FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY},"If set to 1, the sound will be heard when an entity is spinning.")
 
 concommand.Add("sv_flybysound_resetconvars",function(ply)
-	RunConsoleCommand("sv_flybysound_minspeed",			100)
-	RunConsoleCommand("sv_flybysound_maxspeed",			1000)
-	RunConsoleCommand("sv_flybysound_minshapevolume",	1)
-	RunConsoleCommand("sv_flybysound_maxshapevolume",	300)
-	RunConsoleCommand("sv_flybysound_minvol",			30)
-	RunConsoleCommand("sv_flybysound_playersounds",		1)
-	RunConsoleCommand("sv_flybysound_spinsounds",		0)
+	RunConsoleCommand("sv_flybysound_minspeed",	100)
+	RunConsoleCommand("sv_flybysound_maxspeed",	1000)
+	RunConsoleCommand("sv_flybysound_minshapevolume", 1)
+	RunConsoleCommand("sv_flybysound_maxshapevolume", 300)
+	RunConsoleCommand("sv_flybysound_minvol", 30)
+	RunConsoleCommand("sv_flybysound_playersounds", 0)
+	RunConsoleCommand("sv_flybysound_spinsounds", 0)
 end)
 
 FlyBySound_validClasses = {
@@ -46,29 +46,43 @@ if CLIENT then
 			panel:ClearControls()
 			panel:Help("Fly By Sounds Client Options")
 			panel:Help("(All number sliders have an effect on performance!)")
+
 			panel:Help(" ")
+
 			panel:NumSlider("Entity Scan Delay","cl_flybysound_scandelay",0.00,1.00,2)
 			panel:NumSlider("Sound Update Delay","cl_flybysound_updatedelay",0.00,0.300,2)
+
 			panel:NumSlider("Maximum Audible Distance","cl_flybysound_cutoffdist",0,10000,1)
+			
 			panel:CheckBox("Alternative Sound Effect","cl_flybysound_alternatesound")
+
 			panel:Help(" ")
+
 			panel:Button("Reset To Defaults","cl_flybysound_resetconvars",{})
 		end)
 		spawnmenu.AddToolMenuOption("Options", "Fly By Sounds", "FlyBySoundsServerMenu", "Server Options", "", "", function(panel)
 			panel:ClearControls()
 			panel:Help("Fly By Sounds Server Options")
+
 			panel:Help(" ")
+
 			panel:NumSlider("Minimum Speed", "sv_flybysound_minspeed", 0, 2000, 0)
 			panel:NumSlider("Maximum Speed", "sv_flybysound_maxspeed", 1, 1000,0)
 
 			panel:NumSlider("Minimum Shape Size", "sv_flybysound_minshapevolume", 0, 1000, 0)
 			panel:NumSlider("Maximum Shape Size", "sv_flybysound_maxshapevolume", 1, 1000, 0)
+
 			panel:Help(" ")
+
 			panel:NumSlider("Minimum Volume", "sv_flybysound_minvol", 1, 100,2)
+
 			panel:Help(" ")
+
 			panel:CheckBox("Apply to Players", "sv_flybysound_playersounds")
 			panel:CheckBox("Spinning Sounds", "sv_flybysound_spinsounds")
+
 			panel:Help(" ")
+
 			panel:Button("Reset To Defaults","sv_flybysound_resetconvars",{})
 		end)
 	end)
