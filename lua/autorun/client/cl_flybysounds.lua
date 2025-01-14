@@ -7,7 +7,12 @@ CreateClientConVar("cl_flybysound_updatedelay", 0.05, true, false, "How often th
 CreateClientConVar("cl_flybysound_cutoffdist", 3000, true, false, "Maximum distance at which sounds can be heard. Smaller values can give better performance in large maps.", 0, 10000)
 CreateClientConVar("cl_flybysound_altsound", 0, true, false, "If set to 1 then an alternative wind sound will play. (Portal 2)")
 
-
+concommand.Add("cl_flybysound_resetconvars",function()
+  RunConsoleCommand("cl_flybysound_scandelay", 0.5)
+  RunConsoleCommand("cl_flybysound_updatedelay", 0.05)
+  RunConsoleCommand("cl_flybysound_cutoffdist", 3000)
+  RunConsoleCommand("cl_flybysound_altsound", 0)
+end)
 
 local function updateCVars()
   minspeed        = GetConVar("sv_flybysound_minspeed"):GetInt()
